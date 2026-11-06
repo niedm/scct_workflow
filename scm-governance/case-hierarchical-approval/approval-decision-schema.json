@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "分级审批决策",
+  "type": "object",
+  "required": [
+    "decision",
+    "comment",
+    "idempotency_key"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "title": "审批结论",
+      "enum": [
+        "APPROVE",
+        "APPROVE_WITH_CONDITIONS",
+        "REJECT"
+      ]
+    },
+    "comment": {
+      "type": "string",
+      "title": "审批意见"
+    },
+    "conditions": {
+      "type": "array",
+      "title": "附条件（附条件同意时填写）",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signature_method": {
+      "type": "string",
+      "title": "签署方式",
+      "enum": [
+        "fingerprint",
+        "face",
+        "password"
+      ]
+    },
+    "signature_evidence": {
+      "type": "string",
+      "title": "生物识别签署凭证（回执 hash）"
+    },
+    "risk_snapshot_hash": {
+      "type": "string",
+      "title": "风险快照 hash",
+      "readOnly": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "title": "幂等键",
+      "readOnly": true
+    }
+  }
+}

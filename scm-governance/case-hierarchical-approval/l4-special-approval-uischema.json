@@ -1,0 +1,39 @@
+{
+  "ui:order": [
+    "decision",
+    "comment",
+    "meeting_link",
+    "attendees",
+    "conditions",
+    "joint_signature_evidence",
+    "risk_snapshot_hash",
+    "idempotency_key"
+  ],
+  "decision": {
+    "ui:widget": "radio"
+  },
+  "comment": {
+    "ui:widget": "textarea",
+    "ui:options": {
+      "rows": 5
+    }
+  },
+  "attendees": {
+    "ui:options": {
+      "addable": true,
+      "orderable": false
+    }
+  },
+  "joint_signature_evidence": {
+    "ui:options": {
+      "addable": true,
+      "orderable": false
+    }
+  },
+  "risk_snapshot_hash": {
+    "ui:readonly": true
+  },
+  "idempotency_key": {
+    "ui:readonly": true
+  }
+}

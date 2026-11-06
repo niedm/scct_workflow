@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "L4 特大危机特批",
+  "type": "object",
+  "required": [
+    "decision",
+    "comment",
+    "meeting_link",
+    "attendees",
+    "idempotency_key"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "title": "特批结论",
+      "enum": [
+        "APPROVE",
+        "APPROVE_WITH_CONDITIONS",
+        "REJECT"
+      ]
+    },
+    "comment": {
+      "type": "string",
+      "title": "业务决策批注（必填）"
+    },
+    "meeting_link": {
+      "type": "string",
+      "title": "紧急视频会商链接",
+      "format": "uri"
+    },
+    "attendees": {
+      "type": "array",
+      "title": "参会人",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "title": "附条件",
+      "items": {
+        "type": "string"
+      }
+    },
+    "joint_signature_evidence": {
+      "type": "array",
+      "title": "联合签署凭证（COO / 经委会主任）",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk_snapshot_hash": {
+      "type": "string",
+      "title": "风险快照 hash",
+      "readOnly": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "title": "幂等键",
+      "readOnly": true
+    }
+  }
+}

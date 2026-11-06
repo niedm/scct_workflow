@@ -1,0 +1,9 @@
+{
+  "description": "3.4.2 业务分级审批流（L1~L4 风险授权矩阵 MoA）",
+  "display_name": "Case 分级审批流",
+  "exception_notification_addresses": [],
+  "fault_or_suspend_on_exception": "suspend",
+  "metadata_extraction_paths": null,
+  "primary_file_name": "case-hierarchical-approval.bpmn",
+  "primary_process_id": "Process_case_hierarchical_approval"
+}

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:spiffworkflow="http://spiffworkflow.org/bpmn/schema/1.0/core"
+  id="Definitions_case_approval" targetNamespace="http://bpmn.io/schema/bpmn"
+  exporter="Claude Code" exporterVersion="1.0">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="Case 分级审批流" processRef="Process_case_hierarchical_approval"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_case_hierarchical_approval" name="Case 分级审批流" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_1"><bpmn:lane id="Lane_System" name="System"><bpmn:flowNodeRef>StartEvent_Consensus</bpmn:flowNodeRef><bpmn:flowNodeRef>ScriptTask_Init</bpmn:flowNodeRef><bpmn:flowNodeRef>BusinessRuleTask_RiskEvaluation</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_RiskRoute</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L2Route</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L1</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L1Decision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L2SOP</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L2SOPDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L2AfterR3</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L2Plant</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L2PlantDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L3Initial</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L3InitialDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L3Final</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L3FinalDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L4Initial</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L4InitialDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L4Final</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L4FinalDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>Boundary_L4Special</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_L4SpecialDecision</bpmn:flowNodeRef><bpmn:flowNodeRef>ScriptTask_BuildSync</bpmn:flowNodeRef><bpmn:flowNodeRef>ServiceTask_SyncApproved</bpmn:flowNodeRef><bpmn:flowNodeRef>EndEvent_Approved</bpmn:flowNodeRef><bpmn:flowNodeRef>ScriptTask_BuildRejection</bpmn:flowNodeRef><bpmn:flowNodeRef>ServiceTask_BroadcastRejection</bpmn:flowNodeRef><bpmn:flowNodeRef>EndEvent_Rejected</bpmn:flowNodeRef><bpmn:flowNodeRef>ScriptTask_BuildEscalation</bpmn:flowNodeRef><bpmn:flowNodeRef>ServiceTask_SendEscalation</bpmn:flowNodeRef><bpmn:flowNodeRef>EndEvent_Escalated</bpmn:flowNodeRef></bpmn:lane><bpmn:lane id="Lane_R2" name="scm_r2_planner"><bpmn:flowNodeRef>UserTask_L1</bpmn:flowNodeRef></bpmn:lane><bpmn:lane id="Lane_R3" name="scm_r3_sop_manager"><bpmn:flowNodeRef>UserTask_L2SOP</bpmn:flowNodeRef><bpmn:flowNodeRef>UserTask_L3Initial</bpmn:flowNodeRef><bpmn:flowNodeRef>UserTask_L4Initial</bpmn:flowNodeRef></bpmn:lane><bpmn:lane id="Lane_R5" name="scm_r5_plant_manager"><bpmn:flowNodeRef>UserTask_L2Plant</bpmn:flowNodeRef></bpmn:lane><bpmn:lane id="Lane_R1" name="scm_r1_scm_vp"><bpmn:flowNodeRef>UserTask_L3Final</bpmn:flowNodeRef><bpmn:flowNodeRef>UserTask_L4Final</bpmn:flowNodeRef></bpmn:lane><bpmn:lane id="Lane_COO" name="scm_group_coo"><bpmn:flowNodeRef>UserTask_L4Special</bpmn:flowNodeRef></bpmn:lane></bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Consensus" name="P10 4/4 共识"><bpmn:outgoing>Flow_Start_Init</bpmn:outgoing></bpmn:startEvent><bpmn:scriptTask id="ScriptTask_Init" name="初始化审批变量" scriptFormat="python"><bpmn:script>approval_result = "PENDING"
+try:
+    approval_records = approval_records
+except NameError:
+    approval_records = []
+try:
+    l2_approver_rule = l2_approver_rule
+except NameError:
+    l2_approver_rule = "JOINT"
+try:
+    notification_gateway_url = notification_gateway_url
+except NameError:
+    notification_gateway_url = "http://notification-gateway:8080/api/notify"
+try:
+    case_sync_url = case_sync_url
+except NameError:
+    case_sync_url = "http://case-service:8080/internal/cases/" + case_id + "/approval-events"
+headers = {"Content-Type": "application/json"}
+</bpmn:script><bpmn:incoming>Flow_Start_Init</bpmn:incoming><bpmn:outgoing>Flow_Init_Risk</bpmn:outgoing></bpmn:scriptTask><bpmn:businessRuleTask id="BusinessRuleTask_RiskEvaluation" name="风险判定（MoA DMN）"><bpmn:extensionElements><spiffworkflow:calledDecisionId>risk_level_decision</spiffworkflow:calledDecisionId></bpmn:extensionElements><bpmn:incoming>Flow_Init_Risk</bpmn:incoming><bpmn:outgoing>Flow_Risk_Route</bpmn:outgoing></bpmn:businessRuleTask><bpmn:exclusiveGateway id="Gateway_RiskRoute" name="按风险等级路由" default="Flow_Route_L4"><bpmn:incoming>Flow_Risk_Route</bpmn:incoming><bpmn:outgoing>Flow_Route_L1</bpmn:outgoing><bpmn:outgoing>Flow_Route_L2</bpmn:outgoing><bpmn:outgoing>Flow_Route_L3</bpmn:outgoing><bpmn:outgoing>Flow_Route_L4</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:exclusiveGateway id="Gateway_L2Route" name="L2 审批权属路由" default="Flow_L2_Route_Joint"><bpmn:incoming>Flow_Route_L2</bpmn:incoming><bpmn:outgoing>Flow_L2_Route_R3</bpmn:outgoing><bpmn:outgoing>Flow_L2_Route_R5</bpmn:outgoing><bpmn:outgoing>Flow_L2_Route_Joint</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L1" name="L1 低风险自决（R2）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L1 低风险自决（R2）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L1_SELF_APPROVE"
+escalation_recipients = ["scm_r2_planner"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_Route_L1</bpmn:incoming><bpmn:outgoing>Flow_L1_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L1" name="SLA 15min" attachedToRef="UserTask_L1" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L1</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L1_def"><bpmn:timeDuration>"PT15M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L1Decision" name="L1 结论" default="Flow_L1_Approve"><bpmn:incoming>Flow_L1_Decision</bpmn:incoming><bpmn:outgoing>Flow_L1_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L1_Approve</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L2SOP" name="L2 产销审批（R3）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L2 产销审批（R3）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L2_SOP_APPROVE"
+escalation_recipients = ["scm_r3_sop_manager", "scm_r5_plant_manager"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_L2_Route_R3</bpmn:incoming><bpmn:incoming>Flow_L2_Route_Joint</bpmn:incoming><bpmn:outgoing>Flow_L2SOP_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L2SOP" name="SLA 30min" attachedToRef="UserTask_L2SOP" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L2SOP</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L2SOP_def"><bpmn:timeDuration>"PT30M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L2SOPDecision" name="L2 R3 结论" default="Flow_L2SOP_Next"><bpmn:incoming>Flow_L2SOP_Decision</bpmn:incoming><bpmn:outgoing>Flow_L2SOP_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L2SOP_Next</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:exclusiveGateway id="Gateway_L2AfterR3" name="是否需 R5 会签" default="Flow_L2_AfterR3_Approve"><bpmn:incoming>Flow_L2SOP_Next</bpmn:incoming><bpmn:outgoing>Flow_L2_AfterR3_Joint</bpmn:outgoing><bpmn:outgoing>Flow_L2_AfterR3_Approve</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L2Plant" name="L2 制造审批（R5）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L2 制造审批（R5）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L2_PLANT_APPROVE"
+escalation_recipients = ["scm_r5_plant_manager"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_L2_Route_R5</bpmn:incoming><bpmn:incoming>Flow_L2_AfterR3_Joint</bpmn:incoming><bpmn:outgoing>Flow_L2Plant_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L2Plant" name="SLA 30min" attachedToRef="UserTask_L2Plant" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L2Plant</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L2Plant_def"><bpmn:timeDuration>"PT30M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L2PlantDecision" name="L2 R5 结论" default="Flow_L2Plant_Approve"><bpmn:incoming>Flow_L2Plant_Decision</bpmn:incoming><bpmn:outgoing>Flow_L2Plant_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L2Plant_Approve</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L3Initial" name="L3 初审（R3）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L3 初审（R3）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L3_INITIAL"
+escalation_recipients = ["scm_r3_sop_manager"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_Route_L3</bpmn:incoming><bpmn:outgoing>Flow_L3Initial_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L3Initial" name="SLA 20min" attachedToRef="UserTask_L3Initial" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L3Initial</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L3Initial_def"><bpmn:timeDuration>"PT20M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L3InitialDecision" name="L3 初审结论" default="Flow_L3Initial_Next"><bpmn:incoming>Flow_L3Initial_Decision</bpmn:incoming><bpmn:outgoing>Flow_L3Initial_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L3Initial_Next</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L3Final" name="L3 终审（R1）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L3 终审（R1）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L3_FINAL"
+escalation_recipients = ["scm_r1_scm_vp"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_L3Initial_Next</bpmn:incoming><bpmn:outgoing>Flow_L3Final_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L3Final" name="终审 SLA 45min" attachedToRef="UserTask_L3Final" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L3Final</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L3Final_def"><bpmn:timeDuration>"PT25M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L3FinalDecision" name="L3 终审结论" default="Flow_L3Final_Approve"><bpmn:incoming>Flow_L3Final_Decision</bpmn:incoming><bpmn:outgoing>Flow_L3Final_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L3Final_Approve</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L4Initial" name="L4 初审（R3）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L4 初审（R3）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L4_INITIAL"
+escalation_recipients = ["scm_r3_sop_manager", "scm_group_office", "scm_risk_legal"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_Route_L4</bpmn:incoming><bpmn:outgoing>Flow_L4Initial_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L4Initial" name="初审 SLA 15min" attachedToRef="UserTask_L4Initial" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L4Initial</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L4Initial_def"><bpmn:timeDuration>"PT15M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L4InitialDecision" name="L4 初审结论" default="Flow_L4Initial_Next"><bpmn:incoming>Flow_L4Initial_Decision</bpmn:incoming><bpmn:outgoing>Flow_L4Initial_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L4Initial_Next</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L4Final" name="L4 终审（R1）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L4 终审（R1）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="approval-decision-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="approval-decision-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L4_FINAL"
+escalation_recipients = ["scm_r1_scm_vp", "scm_group_office", "scm_risk_legal"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_L4Initial_Next</bpmn:incoming><bpmn:outgoing>Flow_L4Final_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L4Final" name="终审 SLA 30min" attachedToRef="UserTask_L4Final" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L4Final</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L4Final_def"><bpmn:timeDuration>"PT15M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L4FinalDecision" name="L4 终审结论" default="Flow_L4Final_Next"><bpmn:incoming>Flow_L4Final_Decision</bpmn:incoming><bpmn:outgoing>Flow_L4Final_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L4Final_Next</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:userTask id="UserTask_L4Special" name="L4 特批（COO/经委会）"><bpmn:extensionElements><spiffworkflow:instructionsForEndUser>## Case 分级审批
+- 当前节点：**L4 特批（COO/经委会）**
+- Case：`{{case_id}}` / 方案：`{{solution_id}}` v{{solution_version}}
+- 综合风险等级：**{{risk_level}}**
+- 追加成本：¥{{added_cost}}
+- 客户等级：{{customer_tier}} / 延期：{{delay_days}} 天
+- 风险快照：`{{risk_snapshot_hash}}`
+- 规则版本：{{rule_version}}
+
+请核对风险快照后签署审批意见。
+
+**L4 特批要求**：请附紧急视频会商链接、参会人，并由 COO/经委会主任联合签署。</spiffworkflow:instructionsForEndUser><spiffworkflow:properties><spiffworkflow:property name="formJsonSchemaFilename" value="l4-special-approval-schema.json"/><spiffworkflow:property name="formUiSchemaFilename" value="l4-special-approval-uischema.json"/></spiffworkflow:properties><spiffworkflow:preScript>current_node = "L4_SPECIAL"
+escalation_recipients = ["scm_group_coo", "scm_committee_director", "scm_group_office", "scm_risk_legal"]
+</spiffworkflow:preScript><spiffworkflow:postScript>approved_by = get_current_user()["username"]
+try:
+    _snapshot_hash = risk_snapshot_hash
+except NameError:
+    _snapshot_hash = None
+approval_records = approval_records + [{
+    "node": current_node,
+    "decision": decision,
+    "comment": comment,
+    "approver": approved_by,
+    "risk_snapshot_hash": _snapshot_hash,
+}]
+if decision == "REJECT":
+    rejection_reason = comment
+</spiffworkflow:postScript></bpmn:extensionElements><bpmn:incoming>Flow_L4Final_Next</bpmn:incoming><bpmn:outgoing>Flow_L4Special_Decision</bpmn:outgoing></bpmn:userTask><bpmn:boundaryEvent id="Boundary_L4Special" name="特批 SLA 60min" attachedToRef="UserTask_L4Special" cancelActivity="false"><bpmn:outgoing>Flow_Esc_L4Special</bpmn:outgoing><bpmn:timerEventDefinition id="Boundary_L4Special_def"><bpmn:timeDuration>"PT30M"</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:exclusiveGateway id="Gateway_L4SpecialDecision" name="L4 特批结论" default="Flow_L4Special_Approve"><bpmn:incoming>Flow_L4Special_Decision</bpmn:incoming><bpmn:outgoing>Flow_L4Special_Reject</bpmn:outgoing><bpmn:outgoing>Flow_L4Special_Approve</bpmn:outgoing></bpmn:exclusiveGateway><bpmn:scriptTask id="ScriptTask_BuildSync" name="组装审批通过事件" scriptFormat="python"><bpmn:script>sync_payload = {
+    "event": "approval.approved",
+    "case_id": case_id,
+    "solution_id": solution_id,
+    "solution_version": solution_version,
+    "risk_level": risk_level,
+    "approval_records": approval_records,
+}
+approval_result = "APPROVED"
+</bpmn:script><bpmn:incoming>Flow_L1_Approve</bpmn:incoming><bpmn:incoming>Flow_L2_AfterR3_Approve</bpmn:incoming><bpmn:incoming>Flow_L2Plant_Approve</bpmn:incoming><bpmn:incoming>Flow_L3Final_Approve</bpmn:incoming><bpmn:incoming>Flow_L4Special_Approve</bpmn:incoming><bpmn:outgoing>Flow_BuildSync_Service</bpmn:outgoing></bpmn:scriptTask><bpmn:serviceTask id="ServiceTask_SyncApproved" name="同步 Case 审批通过"><bpmn:extensionElements><spiffworkflow:serviceTaskOperator id="http/PostRequest" resultVariable="sync_response"><spiffworkflow:parameters><spiffworkflow:parameter id="url" type="str" value="case_sync_url"/><spiffworkflow:parameter id="headers" type="any" value="headers"/><spiffworkflow:parameter id="data" type="any" value="sync_payload"/><spiffworkflow:parameter id="basic_auth_username" type="str"/><spiffworkflow:parameter id="basic_auth_password" type="str"/></spiffworkflow:parameters></spiffworkflow:serviceTaskOperator></bpmn:extensionElements><bpmn:incoming>Flow_BuildSync_Service</bpmn:incoming><bpmn:outgoing>Flow_Sync_End</bpmn:outgoing></bpmn:serviceTask><bpmn:endEvent id="EndEvent_Approved" name="审批通过"><bpmn:incoming>Flow_Sync_End</bpmn:incoming></bpmn:endEvent><bpmn:scriptTask id="ScriptTask_BuildRejection" name="组装驳回事件" scriptFormat="python"><bpmn:script>try:
+    _rejected_by = approved_by
+except NameError:
+    _rejected_by = None
+try:
+    _reason = rejection_reason
+except NameError:
+    _reason = comment
+rejection_payload = {
+    "event": "approval.rejected",
+    "case_id": case_id,
+    "solution_id": solution_id,
+    "solution_version": solution_version,
+    "risk_level": risk_level,
+    "current_node": current_node,
+    "rejected_by": _rejected_by,
+    "rejection_reason": _reason,
+}
+approval_result = "REJECTED"
+</bpmn:script><bpmn:incoming>Flow_L1_Reject</bpmn:incoming><bpmn:incoming>Flow_L2SOP_Reject</bpmn:incoming><bpmn:incoming>Flow_L2Plant_Reject</bpmn:incoming><bpmn:incoming>Flow_L3Initial_Reject</bpmn:incoming><bpmn:incoming>Flow_L3Final_Reject</bpmn:incoming><bpmn:incoming>Flow_L4Initial_Reject</bpmn:incoming><bpmn:incoming>Flow_L4Final_Reject</bpmn:incoming><bpmn:incoming>Flow_L4Special_Reject</bpmn:incoming><bpmn:outgoing>Flow_BuildRejection_Service</bpmn:outgoing></bpmn:scriptTask><bpmn:serviceTask id="ServiceTask_BroadcastRejection" name="广播驳回意见"><bpmn:extensionElements><spiffworkflow:serviceTaskOperator id="http/PostRequest" resultVariable="rejection_response"><spiffworkflow:parameters><spiffworkflow:parameter id="url" type="str" value="case_sync_url"/><spiffworkflow:parameter id="headers" type="any" value="headers"/><spiffworkflow:parameter id="data" type="any" value="rejection_payload"/><spiffworkflow:parameter id="basic_auth_username" type="str"/><spiffworkflow:parameter id="basic_auth_password" type="str"/></spiffworkflow:parameters></spiffworkflow:serviceTaskOperator></bpmn:extensionElements><bpmn:incoming>Flow_BuildRejection_Service</bpmn:incoming><bpmn:outgoing>Flow_Rejection_End</bpmn:outgoing></bpmn:serviceTask><bpmn:endEvent id="EndEvent_Rejected" name="退回 SOLUTION_REVISE"><bpmn:incoming>Flow_Rejection_End</bpmn:incoming></bpmn:endEvent><bpmn:scriptTask id="ScriptTask_BuildEscalation" name="组装超时催办事件" scriptFormat="python"><bpmn:script>escalation_payload = {
+    "event": "approval.escalated",
+    "case_id": case_id,
+    "solution_id": solution_id,
+    "solution_version": solution_version,
+    "risk_level": risk_level,
+    "current_node": current_node,
+    "recipients": escalation_recipients,
+    "channel": "ivr" if risk_level in ("L3", "L4") else "im",
+}
+</bpmn:script><bpmn:incoming>Flow_Esc_L1</bpmn:incoming><bpmn:incoming>Flow_Esc_L2SOP</bpmn:incoming><bpmn:incoming>Flow_Esc_L2Plant</bpmn:incoming><bpmn:incoming>Flow_Esc_L3Initial</bpmn:incoming><bpmn:incoming>Flow_Esc_L3Final</bpmn:incoming><bpmn:incoming>Flow_Esc_L4Initial</bpmn:incoming><bpmn:incoming>Flow_Esc_L4Final</bpmn:incoming><bpmn:incoming>Flow_Esc_L4Special</bpmn:incoming><bpmn:outgoing>Flow_BuildEscalation_Service</bpmn:outgoing></bpmn:scriptTask><bpmn:serviceTask id="ServiceTask_SendEscalation" name="发送催办/升级"><bpmn:extensionElements><spiffworkflow:serviceTaskOperator id="http/PostRequest" resultVariable="escalation_response"><spiffworkflow:parameters><spiffworkflow:parameter id="url" type="str" value="notification_gateway_url"/><spiffworkflow:parameter id="headers" type="any" value="headers"/><spiffworkflow:parameter id="data" type="any" value="escalation_payload"/><spiffworkflow:parameter id="basic_auth_username" type="str"/><spiffworkflow:parameter id="basic_auth_password" type="str"/></spiffworkflow:parameters></spiffworkflow:serviceTaskOperator></bpmn:extensionElements><bpmn:incoming>Flow_BuildEscalation_Service</bpmn:incoming><bpmn:outgoing>Flow_Escalation_End</bpmn:outgoing></bpmn:serviceTask><bpmn:endEvent id="EndEvent_Escalated" name="催办分支结束"><bpmn:incoming>Flow_Escalation_End</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Init" sourceRef="StartEvent_Consensus" targetRef="ScriptTask_Init"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Init_Risk" sourceRef="ScriptTask_Init" targetRef="BusinessRuleTask_RiskEvaluation"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Risk_Route" sourceRef="BusinessRuleTask_RiskEvaluation" targetRef="Gateway_RiskRoute"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Route_L1" sourceRef="Gateway_RiskRoute" targetRef="UserTask_L1" name="L1"><bpmn:conditionExpression>risk_level == "L1"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Route_L2" sourceRef="Gateway_RiskRoute" targetRef="Gateway_L2Route" name="L2"><bpmn:conditionExpression>risk_level == "L2"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Route_L3" sourceRef="Gateway_RiskRoute" targetRef="UserTask_L3Initial" name="L3"><bpmn:conditionExpression>risk_level == "L3"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Route_L4" sourceRef="Gateway_RiskRoute" targetRef="UserTask_L4Initial" name="L4 / 兜底"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L1_Decision" sourceRef="UserTask_L1" targetRef="Gateway_L1Decision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L1_Reject" sourceRef="Gateway_L1Decision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L1_Approve" sourceRef="Gateway_L1Decision" targetRef="ScriptTask_BuildSync" name="通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L1" sourceRef="Boundary_L1" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2_Route_R3" sourceRef="Gateway_L2Route" targetRef="UserTask_L2SOP" name="R3 单签"><bpmn:conditionExpression>l2_approver_rule == "R3"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2_Route_R5" sourceRef="Gateway_L2Route" targetRef="UserTask_L2Plant" name="R5 单签"><bpmn:conditionExpression>l2_approver_rule == "R5"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2_Route_Joint" sourceRef="Gateway_L2Route" targetRef="UserTask_L2SOP" name="R3+R5 会签"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2SOP_Decision" sourceRef="UserTask_L2SOP" targetRef="Gateway_L2SOPDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2SOP_Reject" sourceRef="Gateway_L2SOPDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2SOP_Next" sourceRef="Gateway_L2SOPDecision" targetRef="Gateway_L2AfterR3" name="通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2_AfterR3_Joint" sourceRef="Gateway_L2AfterR3" targetRef="UserTask_L2Plant" name="会签给 R5"><bpmn:conditionExpression>l2_approver_rule == "JOINT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2_AfterR3_Approve" sourceRef="Gateway_L2AfterR3" targetRef="ScriptTask_BuildSync" name="R3 单签通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2Plant_Decision" sourceRef="UserTask_L2Plant" targetRef="Gateway_L2PlantDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2Plant_Reject" sourceRef="Gateway_L2PlantDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L2Plant_Approve" sourceRef="Gateway_L2PlantDecision" targetRef="ScriptTask_BuildSync" name="通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L2SOP" sourceRef="Boundary_L2SOP" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L2Plant" sourceRef="Boundary_L2Plant" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Initial_Decision" sourceRef="UserTask_L3Initial" targetRef="Gateway_L3InitialDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Initial_Reject" sourceRef="Gateway_L3InitialDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Initial_Next" sourceRef="Gateway_L3InitialDecision" targetRef="UserTask_L3Final" name="初审通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Final_Decision" sourceRef="UserTask_L3Final" targetRef="Gateway_L3FinalDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Final_Reject" sourceRef="Gateway_L3FinalDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L3Final_Approve" sourceRef="Gateway_L3FinalDecision" targetRef="ScriptTask_BuildSync" name="终审通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L3Initial" sourceRef="Boundary_L3Initial" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L3Final" sourceRef="Boundary_L3Final" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Initial_Decision" sourceRef="UserTask_L4Initial" targetRef="Gateway_L4InitialDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Initial_Reject" sourceRef="Gateway_L4InitialDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Initial_Next" sourceRef="Gateway_L4InitialDecision" targetRef="UserTask_L4Final" name="初审通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Final_Decision" sourceRef="UserTask_L4Final" targetRef="Gateway_L4FinalDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Final_Reject" sourceRef="Gateway_L4FinalDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Final_Next" sourceRef="Gateway_L4FinalDecision" targetRef="UserTask_L4Special" name="终审通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Special_Decision" sourceRef="UserTask_L4Special" targetRef="Gateway_L4SpecialDecision"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Special_Reject" sourceRef="Gateway_L4SpecialDecision" targetRef="ScriptTask_BuildRejection" name="驳回"><bpmn:conditionExpression>decision == "REJECT"</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_L4Special_Approve" sourceRef="Gateway_L4SpecialDecision" targetRef="ScriptTask_BuildSync" name="特批通过"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L4Initial" sourceRef="Boundary_L4Initial" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L4Final" sourceRef="Boundary_L4Final" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Esc_L4Special" sourceRef="Boundary_L4Special" targetRef="ScriptTask_BuildEscalation" name="超时催办"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_BuildSync_Service" sourceRef="ScriptTask_BuildSync" targetRef="ServiceTask_SyncApproved"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Sync_End" sourceRef="ServiceTask_SyncApproved" targetRef="EndEvent_Approved"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_BuildRejection_Service" sourceRef="ScriptTask_BuildRejection" targetRef="ServiceTask_BroadcastRejection"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Rejection_End" sourceRef="ServiceTask_BroadcastRejection" targetRef="EndEvent_Rejected"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_BuildEscalation_Service" sourceRef="ScriptTask_BuildEscalation" targetRef="ServiceTask_SendEscalation"></bpmn:sequenceFlow><bpmn:sequenceFlow id="Flow_Escalation_End" sourceRef="ServiceTask_SendEscalation" targetRef="EndEvent_Escalated"></bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true"><dc:Bounds x="120" y="60" width="2100" height="260"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Lane_R2_di" bpmnElement="Lane_R2" isHorizontal="true"><dc:Bounds x="120" y="320" width="2100" height="140"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Lane_R3_di" bpmnElement="Lane_R3" isHorizontal="true"><dc:Bounds x="120" y="460" width="2100" height="160"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Lane_R5_di" bpmnElement="Lane_R5" isHorizontal="true"><dc:Bounds x="120" y="620" width="2100" height="160"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Lane_R1_di" bpmnElement="Lane_R1" isHorizontal="true"><dc:Bounds x="120" y="780" width="2100" height="160"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Lane_COO_di" bpmnElement="Lane_COO" isHorizontal="true"><dc:Bounds x="120" y="940" width="2100" height="160"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true"><dc:Bounds x="100" y="60" width="2140" height="1040"/></bpmndi:BPMNShape><bpmndi:BPMNShape id="StartEvent_Consensus_di" bpmnElement="StartEvent_Consensus"><dc:Bounds x="160" y="140" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ScriptTask_Init_di" bpmnElement="ScriptTask_Init"><dc:Bounds x="240" y="118" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="BusinessRuleTask_RiskEvaluation_di" bpmnElement="BusinessRuleTask_RiskEvaluation"><dc:Bounds x="380" y="118" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_RiskRoute_di" bpmnElement="Gateway_RiskRoute"><dc:Bounds x="520" y="133" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L2Route_di" bpmnElement="Gateway_L2Route"><dc:Bounds x="650" y="133" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L1_di" bpmnElement="UserTask_L1"><dc:Bounds x="780" y="350" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L1_di" bpmnElement="Boundary_L1"><dc:Bounds x="820" y="332" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L1Decision_di" bpmnElement="Gateway_L1Decision"><dc:Bounds x="940" y="365" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L2SOP_di" bpmnElement="UserTask_L2SOP"><dc:Bounds x="780" y="490" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L2SOP_di" bpmnElement="Boundary_L2SOP"><dc:Bounds x="820" y="472" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L2SOPDecision_di" bpmnElement="Gateway_L2SOPDecision"><dc:Bounds x="940" y="505" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L2AfterR3_di" bpmnElement="Gateway_L2AfterR3"><dc:Bounds x="1080" y="505" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L2Plant_di" bpmnElement="UserTask_L2Plant"><dc:Bounds x="1220" y="650" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L2Plant_di" bpmnElement="Boundary_L2Plant"><dc:Bounds x="1260" y="632" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L2PlantDecision_di" bpmnElement="Gateway_L2PlantDecision"><dc:Bounds x="1380" y="665" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L3Initial_di" bpmnElement="UserTask_L3Initial"><dc:Bounds x="920" y="490" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L3Initial_di" bpmnElement="Boundary_L3Initial"><dc:Bounds x="960" y="472" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L3InitialDecision_di" bpmnElement="Gateway_L3InitialDecision"><dc:Bounds x="1060" y="505" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L3Final_di" bpmnElement="UserTask_L3Final"><dc:Bounds x="1240" y="810" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L3Final_di" bpmnElement="Boundary_L3Final"><dc:Bounds x="1280" y="792" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L3FinalDecision_di" bpmnElement="Gateway_L3FinalDecision"><dc:Bounds x="1400" y="825" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L4Initial_di" bpmnElement="UserTask_L4Initial"><dc:Bounds x="1060" y="490" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L4Initial_di" bpmnElement="Boundary_L4Initial"><dc:Bounds x="1100" y="472" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L4InitialDecision_di" bpmnElement="Gateway_L4InitialDecision"><dc:Bounds x="1200" y="505" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L4Final_di" bpmnElement="UserTask_L4Final"><dc:Bounds x="1400" y="810" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L4Final_di" bpmnElement="Boundary_L4Final"><dc:Bounds x="1440" y="792" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L4FinalDecision_di" bpmnElement="Gateway_L4FinalDecision"><dc:Bounds x="1560" y="825" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="UserTask_L4Special_di" bpmnElement="UserTask_L4Special"><dc:Bounds x="1560" y="970" width="100" height="80"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Boundary_L4Special_di" bpmnElement="Boundary_L4Special"><dc:Bounds x="1600" y="952" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="Gateway_L4SpecialDecision_di" bpmnElement="Gateway_L4SpecialDecision"><dc:Bounds x="1720" y="985" width="50" height="50"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ScriptTask_BuildSync_di" bpmnElement="ScriptTask_BuildSync"><dc:Bounds x="1800" y="150" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ServiceTask_SyncApproved_di" bpmnElement="ServiceTask_SyncApproved"><dc:Bounds x="1940" y="150" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="EndEvent_Approved_di" bpmnElement="EndEvent_Approved"><dc:Bounds x="2080" y="167" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ScriptTask_BuildRejection_di" bpmnElement="ScriptTask_BuildRejection"><dc:Bounds x="1800" y="230" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ServiceTask_BroadcastRejection_di" bpmnElement="ServiceTask_BroadcastRejection"><dc:Bounds x="1940" y="230" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected"><dc:Bounds x="2080" y="247" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ScriptTask_BuildEscalation_di" bpmnElement="ScriptTask_BuildEscalation"><dc:Bounds x="1800" y="70" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="ServiceTask_SendEscalation_di" bpmnElement="ServiceTask_SendEscalation"><dc:Bounds x="1940" y="70" width="100" height="70"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape><bpmndi:BPMNShape id="EndEvent_Escalated_di" bpmnElement="EndEvent_Escalated"><dc:Bounds x="2080" y="87" width="36" height="36"/><bpmndi:BPMNLabel/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Init_di" bpmnElement="Flow_Start_Init"><di:waypoint x="178" y="158"/><di:waypoint x="209" y="158"/><di:waypoint x="209" y="158"/><di:waypoint x="240" y="158"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Init_Risk_di" bpmnElement="Flow_Init_Risk"><di:waypoint x="290" y="158"/><di:waypoint x="335" y="158"/><di:waypoint x="335" y="158"/><di:waypoint x="380" y="158"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Risk_Route_di" bpmnElement="Flow_Risk_Route"><di:waypoint x="430" y="158"/><di:waypoint x="475" y="158"/><di:waypoint x="475" y="158"/><di:waypoint x="520" y="158"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Route_L1_di" bpmnElement="Flow_Route_L1"><di:waypoint x="545" y="158"/><di:waypoint x="662" y="158"/><di:waypoint x="662" y="390"/><di:waypoint x="780" y="390"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Route_L2_di" bpmnElement="Flow_Route_L2"><di:waypoint x="545" y="158"/><di:waypoint x="597" y="158"/><di:waypoint x="597" y="158"/><di:waypoint x="650" y="158"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Route_L3_di" bpmnElement="Flow_Route_L3"><di:waypoint x="545" y="158"/><di:waypoint x="732" y="158"/><di:waypoint x="732" y="530"/><di:waypoint x="920" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Route_L4_di" bpmnElement="Flow_Route_L4"><di:waypoint x="545" y="158"/><di:waypoint x="802" y="158"/><di:waypoint x="802" y="530"/><di:waypoint x="1060" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L1_Decision_di" bpmnElement="Flow_L1_Decision"><di:waypoint x="830" y="390"/><di:waypoint x="885" y="390"/><di:waypoint x="885" y="390"/><di:waypoint x="940" y="390"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L1_Reject_di" bpmnElement="Flow_L1_Reject"><di:waypoint x="965" y="390"/><di:waypoint x="1382" y="390"/><di:waypoint x="1382" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L1_Approve_di" bpmnElement="Flow_L1_Approve"><di:waypoint x="965" y="390"/><di:waypoint x="1382" y="390"/><di:waypoint x="1382" y="185"/><di:waypoint x="1800" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L1_di" bpmnElement="Flow_Esc_L1"><di:waypoint x="838" y="368"/><di:waypoint x="1319" y="368"/><di:waypoint x="1319" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2_Route_R3_di" bpmnElement="Flow_L2_Route_R3"><di:waypoint x="675" y="158"/><di:waypoint x="727" y="158"/><di:waypoint x="727" y="530"/><di:waypoint x="780" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2_Route_R5_di" bpmnElement="Flow_L2_Route_R5"><di:waypoint x="675" y="158"/><di:waypoint x="947" y="158"/><di:waypoint x="947" y="690"/><di:waypoint x="1220" y="690"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2_Route_Joint_di" bpmnElement="Flow_L2_Route_Joint"><di:waypoint x="675" y="158"/><di:waypoint x="727" y="158"/><di:waypoint x="727" y="530"/><di:waypoint x="780" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2SOP_Decision_di" bpmnElement="Flow_L2SOP_Decision"><di:waypoint x="830" y="530"/><di:waypoint x="885" y="530"/><di:waypoint x="885" y="530"/><di:waypoint x="940" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2SOP_Reject_di" bpmnElement="Flow_L2SOP_Reject"><di:waypoint x="965" y="530"/><di:waypoint x="1382" y="530"/><di:waypoint x="1382" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2SOP_Next_di" bpmnElement="Flow_L2SOP_Next"><di:waypoint x="965" y="530"/><di:waypoint x="1022" y="530"/><di:waypoint x="1022" y="530"/><di:waypoint x="1080" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2_AfterR3_Joint_di" bpmnElement="Flow_L2_AfterR3_Joint"><di:waypoint x="1105" y="530"/><di:waypoint x="1162" y="530"/><di:waypoint x="1162" y="690"/><di:waypoint x="1220" y="690"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2_AfterR3_Approve_di" bpmnElement="Flow_L2_AfterR3_Approve"><di:waypoint x="1105" y="530"/><di:waypoint x="1452" y="530"/><di:waypoint x="1452" y="185"/><di:waypoint x="1800" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2Plant_Decision_di" bpmnElement="Flow_L2Plant_Decision"><di:waypoint x="1270" y="690"/><di:waypoint x="1325" y="690"/><di:waypoint x="1325" y="690"/><di:waypoint x="1380" y="690"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2Plant_Reject_di" bpmnElement="Flow_L2Plant_Reject"><di:waypoint x="1405" y="690"/><di:waypoint x="1602" y="690"/><di:waypoint x="1602" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L2Plant_Approve_di" bpmnElement="Flow_L2Plant_Approve"><di:waypoint x="1405" y="690"/><di:waypoint x="1602" y="690"/><di:waypoint x="1602" y="185"/><di:waypoint x="1800" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L2SOP_di" bpmnElement="Flow_Esc_L2SOP"><di:waypoint x="838" y="508"/><di:waypoint x="1319" y="508"/><di:waypoint x="1319" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L2Plant_di" bpmnElement="Flow_Esc_L2Plant"><di:waypoint x="1278" y="668"/><di:waypoint x="1539" y="668"/><di:waypoint x="1539" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Initial_Decision_di" bpmnElement="Flow_L3Initial_Decision"><di:waypoint x="970" y="530"/><di:waypoint x="1015" y="530"/><di:waypoint x="1015" y="530"/><di:waypoint x="1060" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Initial_Reject_di" bpmnElement="Flow_L3Initial_Reject"><di:waypoint x="1085" y="530"/><di:waypoint x="1442" y="530"/><di:waypoint x="1442" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Initial_Next_di" bpmnElement="Flow_L3Initial_Next"><di:waypoint x="1085" y="530"/><di:waypoint x="1162" y="530"/><di:waypoint x="1162" y="850"/><di:waypoint x="1240" y="850"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Final_Decision_di" bpmnElement="Flow_L3Final_Decision"><di:waypoint x="1290" y="850"/><di:waypoint x="1345" y="850"/><di:waypoint x="1345" y="850"/><di:waypoint x="1400" y="850"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Final_Reject_di" bpmnElement="Flow_L3Final_Reject"><di:waypoint x="1425" y="850"/><di:waypoint x="1612" y="850"/><di:waypoint x="1612" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L3Final_Approve_di" bpmnElement="Flow_L3Final_Approve"><di:waypoint x="1425" y="850"/><di:waypoint x="1612" y="850"/><di:waypoint x="1612" y="185"/><di:waypoint x="1800" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L3Initial_di" bpmnElement="Flow_Esc_L3Initial"><di:waypoint x="978" y="508"/><di:waypoint x="1389" y="508"/><di:waypoint x="1389" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L3Final_di" bpmnElement="Flow_Esc_L3Final"><di:waypoint x="1298" y="828"/><di:waypoint x="1549" y="828"/><di:waypoint x="1549" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Initial_Decision_di" bpmnElement="Flow_L4Initial_Decision"><di:waypoint x="1110" y="530"/><di:waypoint x="1155" y="530"/><di:waypoint x="1155" y="530"/><di:waypoint x="1200" y="530"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Initial_Reject_di" bpmnElement="Flow_L4Initial_Reject"><di:waypoint x="1225" y="530"/><di:waypoint x="1512" y="530"/><di:waypoint x="1512" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Initial_Next_di" bpmnElement="Flow_L4Initial_Next"><di:waypoint x="1225" y="530"/><di:waypoint x="1312" y="530"/><di:waypoint x="1312" y="850"/><di:waypoint x="1400" y="850"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Final_Decision_di" bpmnElement="Flow_L4Final_Decision"><di:waypoint x="1450" y="850"/><di:waypoint x="1505" y="850"/><di:waypoint x="1505" y="850"/><di:waypoint x="1560" y="850"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Final_Reject_di" bpmnElement="Flow_L4Final_Reject"><di:waypoint x="1585" y="850"/><di:waypoint x="1692" y="850"/><di:waypoint x="1692" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Final_Next_di" bpmnElement="Flow_L4Final_Next"><di:waypoint x="1585" y="850"/><di:waypoint x="1622" y="850"/><di:waypoint x="1622" y="1010"/><di:waypoint x="1660" y="1010"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Special_Decision_di" bpmnElement="Flow_L4Special_Decision"><di:waypoint x="1610" y="1010"/><di:waypoint x="1665" y="1010"/><di:waypoint x="1665" y="1010"/><di:waypoint x="1720" y="1010"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Special_Reject_di" bpmnElement="Flow_L4Special_Reject"><di:waypoint x="1745" y="1010"/><di:waypoint x="1772" y="1010"/><di:waypoint x="1772" y="265"/><di:waypoint x="1800" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_L4Special_Approve_di" bpmnElement="Flow_L4Special_Approve"><di:waypoint x="1745" y="1010"/><di:waypoint x="1772" y="1010"/><di:waypoint x="1772" y="185"/><di:waypoint x="1800" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L4Initial_di" bpmnElement="Flow_Esc_L4Initial"><di:waypoint x="1118" y="508"/><di:waypoint x="1459" y="508"/><di:waypoint x="1459" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L4Final_di" bpmnElement="Flow_Esc_L4Final"><di:waypoint x="1458" y="828"/><di:waypoint x="1629" y="828"/><di:waypoint x="1629" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Esc_L4Special_di" bpmnElement="Flow_Esc_L4Special"><di:waypoint x="1618" y="988"/><di:waypoint x="1709" y="988"/><di:waypoint x="1709" y="105"/><di:waypoint x="1800" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_BuildSync_Service_di" bpmnElement="Flow_BuildSync_Service"><di:waypoint x="1850" y="185"/><di:waypoint x="1895" y="185"/><di:waypoint x="1895" y="185"/><di:waypoint x="1940" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Sync_End_di" bpmnElement="Flow_Sync_End"><di:waypoint x="1990" y="185"/><di:waypoint x="2035" y="185"/><di:waypoint x="2035" y="185"/><di:waypoint x="2080" y="185"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_BuildRejection_Service_di" bpmnElement="Flow_BuildRejection_Service"><di:waypoint x="1850" y="265"/><di:waypoint x="1895" y="265"/><di:waypoint x="1895" y="265"/><di:waypoint x="1940" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Rejection_End_di" bpmnElement="Flow_Rejection_End"><di:waypoint x="1990" y="265"/><di:waypoint x="2035" y="265"/><di:waypoint x="2035" y="265"/><di:waypoint x="2080" y="265"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_BuildEscalation_Service_di" bpmnElement="Flow_BuildEscalation_Service"><di:waypoint x="1850" y="105"/><di:waypoint x="1895" y="105"/><di:waypoint x="1895" y="105"/><di:waypoint x="1940" y="105"/></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Flow_Escalation_End_di" bpmnElement="Flow_Escalation_End"><di:waypoint x="1990" y="105"/><di:waypoint x="2035" y="105"/><di:waypoint x="2035" y="105"/><di:waypoint x="2080" y="105"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
