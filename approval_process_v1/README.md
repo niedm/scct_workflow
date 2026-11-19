@@ -4,8 +4,9 @@
 
 ## 文件
 
-- `approval_process.bpmn`：主流程（L1 自动 / L2 顺序双签 / L3 单签）
-- `forms/approval_task.form.json`：用户任务表单
+- `approval_process.bpmn`：主流程（L1 自动 / L2 顺序双签 / L3 单签），含 BPMN DI
+- `forms/start_task.form.json`：启动参数任务表单（`sign_type` / `approval_level` 等）
+- `forms/approval_task.form.json`：签批任务表单
 
 ## 导入
 
@@ -18,6 +19,9 @@
 ## 约定
 
 - 任务定义 ID 固定为 `Task_Sign_R1` / `Task_Sign_R3` / `Task_Sign_R5`，应用据此映射审批人。
+- **SpiffArena 的启动接口不读取创建请求体**，流程变量经首个用户任务 `Task_Start` 提交；应用启动后会自动完成该任务并下发变量。
+- `Task_Init` 在网关前兜底默认值（`SINGLE`/`L3`），因此手工启动不填参数也不会报表达式错误。
+- BPMN 必须保留 `bpmndi:BPMNDiagram`，否则 Modeler 打开为空。
 - 流程变量：`case_no` / `solution_id` / `solution_hash` / `approval_level` / `sign_type` / `approver_list` / `sla_minutes` / `rule_id` / `rule_version` / `voucher_no`。
 - 最终 `approved=True` 由 Script Task 写回；若部署禁用 Script Task，可改为按结束事件推断。
 - 不使用 boundary timer、message event、异步 Service Task、多实例用户任务。
