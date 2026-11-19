@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_scct_approval"
+                  targetNamespace="http://scct.demo/approval">
+  <bpmn:process id="approval_process_v1" name="SCCT 分级审批" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="提交审批">
+      <bpmn:outgoing>F_Start_Gw</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="Gw_Level" name="按签署方式分流" default="F_Unsupported">
+      <bpmn:incoming>F_Start_Gw</bpmn:incoming>
+      <bpmn:outgoing>F_L1</bpmn:outgoing>
+      <bpmn:outgoing>F_L2</bpmn:outgoing>
+      <bpmn:outgoing>F_L3</bpmn:outgoing>
+      <bpmn:outgoing>F_Unsupported</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_Start_Gw" sourceRef="StartEvent_1" targetRef="Gw_Level"/>
+
+    <bpmn:sequenceFlow id="F_L1" sourceRef="Gw_Level" targetRef="Task_AutoApprove">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[sign_type == 'AUTO']]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_L2" sourceRef="Gw_Level" targetRef="Task_Sign_R3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[sign_type == 'DUAL']]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_L3" sourceRef="Gw_Level" targetRef="Task_Sign_R1">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[sign_type == 'SINGLE']]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_Unsupported" sourceRef="Gw_Level" targetRef="End_Rejected"/>
+
+    <!-- L1：自动核准 -->
+    <bpmn:scriptTask id="Task_AutoApprove" name="自动核准" scriptFormat="python">
+      <bpmn:incoming>F_L1</bpmn:incoming>
+      <bpmn:outgoing>F_Auto_End</bpmn:outgoing>
+      <bpmn:script>approved = True</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="F_Auto_End" sourceRef="Task_AutoApprove" targetRef="End_Approved"/>
+
+    <!-- L2：R3 主签 -> R5 会签（顺序双签） -->
+    <bpmn:userTask id="Task_Sign_R3" name="R3 主签">
+      <bpmn:incoming>F_L2</bpmn:incoming>
+      <bpmn:outgoing>F_R3_Gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F_R3_Gw" sourceRef="Task_Sign_R3" targetRef="Gw_R3"/>
+    <bpmn:exclusiveGateway id="Gw_R3" name="R3 结果" default="F_R3_Rejected">
+      <bpmn:incoming>F_R3_Gw</bpmn:incoming>
+      <bpmn:outgoing>F_R3_Approved</bpmn:outgoing>
+      <bpmn:outgoing>F_R3_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_R3_Approved" sourceRef="Gw_R3" targetRef="Task_Sign_R5">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[approved == True]]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_R3_Rejected" sourceRef="Gw_R3" targetRef="End_Rejected"/>
+
+    <bpmn:userTask id="Task_Sign_R5" name="R5 会签">
+      <bpmn:incoming>F_R3_Approved</bpmn:incoming>
+      <bpmn:outgoing>F_R5_Gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F_R5_Gw" sourceRef="Task_Sign_R5" targetRef="Gw_R5"/>
+    <bpmn:exclusiveGateway id="Gw_R5" name="R5 结果" default="F_R5_Rejected">
+      <bpmn:incoming>F_R5_Gw</bpmn:incoming>
+      <bpmn:outgoing>F_R5_Approved</bpmn:outgoing>
+      <bpmn:outgoing>F_R5_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_R5_Approved" sourceRef="Gw_R5" targetRef="Task_FinalizeApproved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[approved == True]]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_R5_Rejected" sourceRef="Gw_R5" targetRef="End_Rejected"/>
+
+    <!-- L3：R1 单签 -->
+    <bpmn:userTask id="Task_Sign_R1" name="R1 审批">
+      <bpmn:incoming>F_L3</bpmn:incoming>
+      <bpmn:outgoing>F_R1_Gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F_R1_Gw" sourceRef="Task_Sign_R1" targetRef="Gw_R1"/>
+    <bpmn:exclusiveGateway id="Gw_R1" name="R1 结果" default="F_R1_Rejected">
+      <bpmn:incoming>F_R1_Gw</bpmn:incoming>
+      <bpmn:outgoing>F_R1_Approved</bpmn:outgoing>
+      <bpmn:outgoing>F_R1_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_R1_Approved" sourceRef="Gw_R1" targetRef="Task_FinalizeApproved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[approved == True]]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_R1_Rejected" sourceRef="Gw_R1" targetRef="End_Rejected"/>
+
+    <bpmn:scriptTask id="Task_FinalizeApproved" name="标记通过" scriptFormat="python">
+      <bpmn:incoming>F_R5_Approved</bpmn:incoming>
+      <bpmn:incoming>F_R1_Approved</bpmn:incoming>
+      <bpmn:outgoing>F_Final_End</bpmn:outgoing>
+      <bpmn:script>approved = True</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="F_Final_End" sourceRef="Task_FinalizeApproved" targetRef="End_Approved"/>
+
+    <bpmn:endEvent id="End_Approved" name="已通过">
+      <bpmn:incoming>F_Auto_End</bpmn:incoming>
+      <bpmn:incoming>F_Final_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_Rejected" name="已驳回">
+      <bpmn:incoming>F_Unsupported</bpmn:incoming>
+      <bpmn:incoming>F_R3_Rejected</bpmn:incoming>
+      <bpmn:incoming>F_R5_Rejected</bpmn:incoming>
+      <bpmn:incoming>F_R1_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>
