@@ -16,7 +16,8 @@
     <bpmn:userTask id="Task_Start" name="填写审批参数">
       <bpmn:extensionElements>
         <spiffworkflow:properties>
-          <spiffworkflow:property name="formJsonSchemaFilename" value="start_task.form.json"/>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="start-task-schema.json"/>
+          <spiffworkflow:property name="formUiSchemaFilename" value="start-task-uischema.json"/>
         </spiffworkflow:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>F_Start_Task</bpmn:incoming>
@@ -72,7 +73,8 @@ if 'approved' not in globals():
     <bpmn:userTask id="Task_Sign_R3" name="R3 主签">
       <bpmn:extensionElements>
         <spiffworkflow:properties>
-          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval-task-schema.json"/>
+          <spiffworkflow:property name="formUiSchemaFilename" value="approval-task-uischema.json"/>
         </spiffworkflow:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>F_L2</bpmn:incoming>
@@ -92,7 +94,8 @@ if 'approved' not in globals():
     <bpmn:userTask id="Task_Sign_R5" name="R5 会签">
       <bpmn:extensionElements>
         <spiffworkflow:properties>
-          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval-task-schema.json"/>
+          <spiffworkflow:property name="formUiSchemaFilename" value="approval-task-uischema.json"/>
         </spiffworkflow:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>F_R3_Approved</bpmn:incoming>
@@ -113,7 +116,8 @@ if 'approved' not in globals():
     <bpmn:userTask id="Task_Sign_R1" name="R1 审批">
       <bpmn:extensionElements>
         <spiffworkflow:properties>
-          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval-task-schema.json"/>
+          <spiffworkflow:property name="formUiSchemaFilename" value="approval-task-uischema.json"/>
         </spiffworkflow:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>F_L3</bpmn:incoming>
