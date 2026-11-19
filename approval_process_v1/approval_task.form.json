@@ -1,9 +1,12 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "分级审批签署",
-  "fields": [
-    {"id": "approved", "type": "checkbox", "label": "是否同意", "required": true},
-    {"id": "remarks", "type": "textarea", "label": "审批意见", "required": false},
-    {"id": "signer", "type": "text", "label": "签署人", "required": true},
-    {"id": "signature", "type": "text", "label": "电子签名", "required": true}
-  ]
+  "type": "object",
+  "properties": {
+    "approved": {"type": "boolean", "title": "是否同意", "default": false},
+    "remarks": {"type": "string", "title": "审批意见"},
+    "signer": {"type": "string", "title": "签署人"},
+    "signature": {"type": "string", "title": "电子签名"}
+  },
+  "required": ["approved", "signer", "signature"]
 }

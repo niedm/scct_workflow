@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:spiffworkflow="http://spiffworkflow.org/bpmn/schema/1.0/core"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   id="Definitions_scct_approval"
                   targetNamespace="http://scct.demo/approval">
@@ -13,6 +14,11 @@
 
     <!-- 启动参数入口：SpiffArena 启动接口不读取创建请求体，变量经首个用户任务提交 -->
     <bpmn:userTask id="Task_Start" name="填写审批参数">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="start_task.form.json"/>
+        </spiffworkflow:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>F_Start_Task</bpmn:incoming>
       <bpmn:outgoing>F_Start_Init</bpmn:outgoing>
     </bpmn:userTask>
@@ -64,6 +70,11 @@ if 'approved' not in globals():
 
     <!-- L2：R3 主签 -> R5 会签（顺序双签） -->
     <bpmn:userTask id="Task_Sign_R3" name="R3 主签">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+        </spiffworkflow:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>F_L2</bpmn:incoming>
       <bpmn:outgoing>F_R3_Gw</bpmn:outgoing>
     </bpmn:userTask>
@@ -79,6 +90,11 @@ if 'approved' not in globals():
     <bpmn:sequenceFlow id="F_R3_Rejected" sourceRef="Gw_R3" targetRef="End_Rejected"/>
 
     <bpmn:userTask id="Task_Sign_R5" name="R5 会签">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+        </spiffworkflow:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>F_R3_Approved</bpmn:incoming>
       <bpmn:outgoing>F_R5_Gw</bpmn:outgoing>
     </bpmn:userTask>
@@ -95,6 +111,11 @@ if 'approved' not in globals():
 
     <!-- L3：R1 单签 -->
     <bpmn:userTask id="Task_Sign_R1" name="R1 审批">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formJsonSchemaFilename" value="approval_task.form.json"/>
+        </spiffworkflow:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>F_L3</bpmn:incoming>
       <bpmn:outgoing>F_R1_Gw</bpmn:outgoing>
     </bpmn:userTask>

@@ -1,10 +1,23 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "填写审批参数",
-  "fields": [
-    {"id": "case_no", "type": "text", "label": "Case 号", "required": true},
-    {"id": "solution_id", "type": "text", "label": "方案 ID", "required": true},
-    {"id": "sign_type", "type": "text", "label": "签署方式（AUTO / SINGLE / DUAL）", "required": true},
-    {"id": "approval_level", "type": "text", "label": "审批级别（L1 / L2 / L3）", "required": true},
-    {"id": "voucher_no", "type": "text", "label": "会商凭据号", "required": false}
-  ]
+  "type": "object",
+  "properties": {
+    "case_no": {"type": "string", "title": "Case 号"},
+    "solution_id": {"type": "string", "title": "方案 ID"},
+    "sign_type": {
+      "type": "string",
+      "title": "签署方式",
+      "enum": ["AUTO", "SINGLE", "DUAL"],
+      "default": "SINGLE"
+    },
+    "approval_level": {
+      "type": "string",
+      "title": "审批级别",
+      "enum": ["L1", "L2", "L3", "L4", "L4-EXT"],
+      "default": "L3"
+    },
+    "voucher_no": {"type": "string", "title": "会商凭据号"}
+  },
+  "required": ["case_no", "solution_id", "sign_type", "approval_level"]
 }
