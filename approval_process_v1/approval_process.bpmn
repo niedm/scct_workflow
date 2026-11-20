@@ -31,12 +31,7 @@
       <bpmn:incoming>F_Start_Init</bpmn:incoming>
       <bpmn:outgoing>F_Init_Gw</bpmn:outgoing>
       <bpmn:script><![CDATA[
-if 'sign_type' not in globals():
-    sign_type = 'SINGLE'
-if 'approval_level' not in globals():
-    approval_level = 'L3'
-if 'approved' not in globals():
-    approved = False
+approved = False
 ]]></bpmn:script>
     </bpmn:scriptTask>
 
