@@ -5,5 +5,5 @@
   "fault_or_suspend_on_exception": "suspend",
   "metadata_extraction_paths": null,
   "primary_file_name": "approval_process.bpmn",
-  "primary_process_id": "Process_approval_process_1795085864"
+  "primary_process_id": "approval_process_v1"
 }
